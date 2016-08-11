@@ -18,6 +18,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoGo.NecroBot.ConfigUI", "P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoGo.UtahSniper", "UtahSniper\PoGo.UtahSniper.csproj", "{5CADD392-E5CB-48D0-965E-9BD6294DC620}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoGo.UtahSniper.Auto", "PoGo.UtahSniper.Auto\PoGo.UtahSniper.Auto.csproj", "{39372845-F401-4A56-A0CC-5C73492BD186}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,6 +76,14 @@ Global
 		{5CADD392-E5CB-48D0-965E-9BD6294DC620}.Release|Any CPU.Build.0 = Release|Any CPU
 		{5CADD392-E5CB-48D0-965E-9BD6294DC620}.Release|x86.ActiveCfg = Release|Any CPU
 		{5CADD392-E5CB-48D0-965E-9BD6294DC620}.Release|x86.Build.0 = Release|Any CPU
+		{39372845-F401-4A56-A0CC-5C73492BD186}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39372845-F401-4A56-A0CC-5C73492BD186}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39372845-F401-4A56-A0CC-5C73492BD186}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{39372845-F401-4A56-A0CC-5C73492BD186}.Debug|x86.Build.0 = Debug|Any CPU
+		{39372845-F401-4A56-A0CC-5C73492BD186}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39372845-F401-4A56-A0CC-5C73492BD186}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39372845-F401-4A56-A0CC-5C73492BD186}.Release|x86.ActiveCfg = Release|Any CPU
+		{39372845-F401-4A56-A0CC-5C73492BD186}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

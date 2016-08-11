@@ -16,20 +16,40 @@ using System.Threading;
 
 namespace UtahSniper
 {
-    class Program
+    public enum SnipeEnum
     {
-        private static readonly ManualResetEvent QuitEvent = new ManualResetEvent(false);
+        Unknow,
+        PokemonCaught,
+        PokemonFlee,
+        PokemonCatchError,
+        PokemonCatchNotSure,
+        PokemonNotFound,
+        PokeStopNotFound,
+        RegisterUrlSuccess,
+        ConfigFileNotFoundOrArgumentParsedError,
+        RemoveUrlSuccess
+    }
+    public class Program
+    {
+        public static readonly ManualResetEvent QuitEvent = new ManualResetEvent(false);
         private static string subPath = "";
         public static PokemonId targetPoke = PokemonId.Missingno;
         public static double lat = 0, lng = 0;
-        static void Main(string[] args)
+        public static SnipeEnum SnipeResult = SnipeEnum.Unknow;
+        public static int Main(string[] args)
         {
             if (args.Length > 0)
             {
                 if (args[0].ToLower() == "--registerurl")
+                {
                     RegisterUrl();
+                    return (int)SnipeEnum.RegisterUrlSuccess;
+                }
                 else if (args[0].ToLower() == "--removeurl")
+                {
                     RemoveUrl();
+                    return (int)SnipeEnum.RemoveUrlSuccess;
+                }
             }
 
             Logger.SetLogger(new ConsoleLogger(LogLevel.LevelUp), subPath);
@@ -37,17 +57,14 @@ namespace UtahSniper
             var machine = new StateMachine();
             var stats = new Statistics();
             var profilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, subPath);
-            var profileConfigPath = Path.Combine(profilePath, "config");
+            var profileConfigPath = Path.Combine(profilePath, "Config");
             var configFile = Path.Combine(profileConfigPath, "config.json");
-            var parseSuccess = Enum.TryParse(args[0].Substring(14).Split('/')[0], out targetPoke);
-
+            var parseSuccess = Enum.TryParse(args[0].Substring(14).Split('/')[0].Replace("'", "").Replace(" ", "").Replace(".", ""), out targetPoke);
             lat = double.Parse(args[0].Substring(14).Split('/')[1].Split(',')[0].Split('(').LastOrDefault().Split(')').LastOrDefault());
             lng = double.Parse(args[0].Substring(14).Split('/')[1].Split(',')[1].Split('(').LastOrDefault().Split(')').LastOrDefault());
 
-            Console.WriteLine(args[0]);
-            Console.WriteLine(targetPoke);
-            Console.WriteLine(lat);
-            Console.WriteLine(lng);
+            Console.WriteLine("Argument: " + args[0]);
+            Console.WriteLine($"Target pokemon: {targetPoke} ({lat},{lng})");
 
             GlobalSettings settings;
 
@@ -58,7 +75,7 @@ namespace UtahSniper
             else
             {
                 Console.ReadKey();
-                return;
+                return (int)SnipeEnum.ConfigFileNotFoundOrArgumentParsedError;
             }
 
             if (args.Length > 0)
@@ -70,6 +87,7 @@ namespace UtahSniper
                 }
                 catch (Exception) { }
                 var session = new Session(new ClientSettings(settings), new LogicSettings(settings));
+
                 session.Client.ApiFailure = new ApiFailureStrategy(session);
                 var aggregator = new StatisticsAggregator(stats);
                 var listener = new ConsoleEventListener();
@@ -79,8 +97,17 @@ namespace UtahSniper
                 Logger.SetLoggerContext(session);
                 machine.AsyncStart(new UtahLoginState(), session);
             }
+            Task.Run(() => 
+            {
+                while (true)
+                {
+                    if (SnipeResult != SnipeEnum.Unknow)
+                        QuitEvent.Set();
+                    QuitEvent.WaitOne(1000);
+                }
+            });
             QuitEvent.WaitOne();
-            Console.ReadKey();
+            return (int)SnipeResult;
         }
 
         private static void RemoveUrl()
