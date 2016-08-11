@@ -37,7 +37,9 @@ namespace PoGo.NecroBot.Logic.Tasks
             }
             Logger.Write("Target pokemon found: " + targetPokemons.FirstOrDefault().PokemonId, color: ConsoleColor.Green);
             await Task.Delay(6000, _cancellationToken);
-            await ForceUnban();
+            var isUnbanned = await ForceUnban();
+            if (!isUnbanned)
+                return;
             await Task.Delay(6000, _cancellationToken);
             await CatchTarget(targetPokemons);
         }
@@ -57,7 +59,7 @@ namespace PoGo.NecroBot.Logic.Tasks
             return pokemons.Where(p => p.PokemonId == Program.targetPoke);
         }
 
-        private async static Task ForceUnban()
+        private async static Task<bool> ForceUnban()
         {
             _cancellationToken.ThrowIfCancellationRequested();
 
@@ -70,7 +72,7 @@ namespace PoGo.NecroBot.Logic.Tasks
             {
                 Logger.Write("There is no pokestop to visit.", color: ConsoleColor.Red);
                 Program.SnipeResult = SnipeEnum.PokeStopNotFound;
-                return;
+                return false;
             }
             Logger.Write("Target pokestop found.", color: ConsoleColor.Green);
             await Task.Delay(6000);
@@ -89,6 +91,7 @@ namespace PoGo.NecroBot.Logic.Tasks
                 fortSearch = await _session.Client.Fort.SearchFort(closestPokeStop.Id, closestPokeStop.Latitude, closestPokeStop.Longitude);
             } while (fortSearch.ExperienceAwarded == 0);
             Logger.Write($"Fuck yes, we are unbanned. ({counter})", color: ConsoleColor.Green);
+            return true;
         }
 
         private async static Task CatchTarget(IEnumerable<MapPokemon> pokemons)

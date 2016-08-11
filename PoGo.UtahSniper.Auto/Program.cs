@@ -1,9 +1,12 @@
-﻿using HtmlAgilityPack;
+﻿using CloudFlareUtilities;
+using HtmlAgilityPack;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using POGOProtos.Enums;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -13,96 +16,302 @@ using System.Threading.Tasks;
 
 namespace UtahSniper.Auto
 {
-
-    public class Pokesnipers
+    public class SniperInfo
     {
-        public Result[] results { get; set; }
+        public ulong EncounterId { get; set; }
+        public DateTime ExpirationTimestamp { get; set; }
+        public double Latitude { get; set; }
+        public double Longitude { get; set; }
+        public PokemonId Id { get; set; }
+        public string SpawnPointId { get; set; }
+        public PokemonMove Move1 { get; set; }
+        public PokemonMove Move2 { get; set; }
+        public double IV { get; set; }
+
+        [JsonIgnore]
+        public DateTime TimeStampAdded { get; set; } = DateTime.Now;
     }
 
-    public class Result
+    public class PokemonLocation
+    {
+        public PokemonLocation(double lat, double lon)
+        {
+            latitude = lat;
+            longitude = lon;
+        }
+
+        public long Id { get; set; }
+        public double expires { get; set; }
+        public double latitude { get; set; }
+        public double longitude { get; set; }
+        public int pokemon_id { get; set; }
+        public PokemonId pokemon_name { get; set; }
+
+        [JsonIgnore]
+        public DateTime TimeStampAdded { get; set; } = DateTime.Now;
+
+        public bool Equals(PokemonLocation obj)
+        {
+            return Math.Abs(latitude - obj.latitude) < 0.0001 && Math.Abs(longitude - obj.longitude) < 0.0001;
+        }
+
+        public override bool Equals(object obj) // contains calls this here
+        {
+            var p = obj as PokemonLocation;
+            if (p == null) // no cast available
+            {
+                return false;
+            }
+
+            return Math.Abs(latitude - p.latitude) < 0.0001 && Math.Abs(longitude - p.longitude) < 0.0001;
+        }
+
+        public override int GetHashCode()
+        {
+            return ToString().GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return latitude.ToString("0.00000000000") + ", " + longitude.ToString("0.00000000000");
+        }
+    }
+
+    public class PokemonLocation_pokezz
+    {
+
+        public double time { get; set; }
+        public double lat { get; set; }
+        public double lng { get; set; }
+        public string iv { get; set; }
+        public double _iv
+        {
+            get
+            {
+                try
+                {
+                    return Convert.ToDouble(iv, CultureInfo.InvariantCulture);
+                }
+                catch
+                {
+                    return 0;
+                }
+            }
+        }
+        public PokemonId name { get; set; }
+        public Boolean verified { get; set; }
+    }
+
+    public class PokemonLocation_pokesnipers
     {
         public int id { get; set; }
-        public string name { get; set; }
+        public double iv { get; set; }
+        public PokemonId name { get; set; }
+        public string until { get; set; }
         public string coords { get; set; }
-        public DateTime until { get; set; }
-        public int iv { get; set; }
-        public object[] attacks { get; set; }
-        public string icon { get; set; }
     }
 
+    public class PokemonLocation_pokewatchers
+    {
+        public PokemonId pokemon { get; set; }
+        public double timeadded { get; set; }
+        public double timeend { get; set; }
+        public string cords { get; set; }
+    }
+
+    public class ScanResult
+    {
+        public string Status { get; set; }
+        public List<PokemonLocation> pokemons { get; set; }
+    }
+
+    public class ScanResult_pokesnipers
+    {
+        public string Status { get; set; }
+        [JsonProperty("results")]
+        public List<PokemonLocation_pokesnipers> pokemons { get; set; }
+    }
+
+    public class ScanResult_pokewatchers
+    {
+        public string Status { get; set; }
+        public List<PokemonLocation_pokewatchers> pokemons { get; set; }
+    }
 
     class Program
     {
+        private static readonly List<SniperInfo> SnipeLocations = new List<SniperInfo>();
+        public static List<PokemonLocation> LocsVisited = new List<PokemonLocation>();
+
         static void Main(string[] args)
         {
-            DateTime scannedTime = new DateTime(1970, 1, 1);
             while (true)
             {
-                var content = GetResponseString(new Uri("http://pokesnipers.com//api/v1/pokemon.json?referrer=home"));
-                var pokesnipers = JsonConvert.DeserializeObject(content, new Pokesnipers().GetType()) as Pokesnipers;
-                var pokemons = pokesnipers.results.Where(p => p.until > scannedTime).OrderBy(p => p.until).ToList();
-
-                if (pokemons.Count == 0) Thread.Sleep(10000);
+                var pokemons = GetSniperInfoFrom_pokesnipers();
 
                 foreach (var pokemon in pokemons)
                 {
-                    Process process = null;
                     if (IsRare(pokemon) || IsHighIV(pokemon))
                     {
-                        Console.WriteLine($"There is a {pokemon.name} with {pokemon.iv}% IV at ({pokemon.coords}). Starting to catch it.");
-                        string string4Sniper2 = $"pokesniper2://{pokemon.name}/{pokemon.coords}";
+                        if (pokemon.ExpirationTimestamp < DateTime.UtcNow)
+                            break;
+                        Console.WriteLine($"There is a {pokemon.Id} at ({pokemon.Latitude},{pokemon.Longitude}). Starting to catch it.");
+                        string string4Sniper2 = $"pokesniper2://{pokemon.Id}/{pokemon.Latitude},{pokemon.Longitude}";
                         //SnipeEnum result = (SnipeEnum)UtahSniper.Program.Main(new string[] { string4Sniper2 });
-                        process = Process.Start(AppDomain.CurrentDomain.BaseDirectory + "\\UtahSniper.exe", string4Sniper2);
-                        scannedTime = pokemon.until;
-                        Thread.Sleep(5000);
+                        var task = Task.Run(() => UtahSniper.Program.Excute(new string[] { string4Sniper2 } ));
+                        while (!task.IsCompleted) Thread.Sleep(1000);
+                        Console.WriteLine((SnipeEnum)task.Result);
                     }
-                    while (Process.GetProcessesByName("UtahSniper").Count() > 0)
-                        Thread.Sleep(1000);
-                    if (process != null)
-                        Console.WriteLine((SnipeEnum)process.ExitCode);
-                    if (pokemon.until < DateTime.UtcNow)
-                        break;
+
+                    if (!LocsVisited.Contains(new PokemonLocation(pokemon.Latitude, pokemon.Longitude)))
+                        LocsVisited.Add(new PokemonLocation(pokemon.Latitude, pokemon.Longitude));
                 }
             }
         }
 
-        private static bool IsHighIV(Result pokemon)
+        private static bool IsHighIV(SniperInfo pokemon)
         {
-            if (pokemon.iv >= 90) return true;
+            if (pokemon.IV >= 90) return true;
             return false;
         }
 
-        private static bool IsRare(Result pokemon)
+        private static bool IsRare(SniperInfo pokemon)
         {
-            switch (pokemon.name)
+            switch (pokemon.Id)
             {
-                case "Snorlax": return true;//卡比獸
-                case "Chansey": return true;//吉利蛋
-                case "Blastoise": return true;//水箭龜
-                case "Venusaur": return true;//妙蛙花
-                case "Charizard": return true;//噴火龍
-                case "Lapras": return true;
-                case "Dragonite": return true;
-                case "Dragonair": return true;
-                case "Dratini": return true;
-                case "Gyarados": return true;
-                case "Ditto": return true;
-                case "Articuno": return true;//冰鳥
-                case "Zapdos": return true;//電鳥
-                case "Moltres": return true;//火鳥
-                case "Mew": return true;
-                case "Mewtwo": return true;
+                case PokemonId.Snorlax: return true;//卡比獸
+                case PokemonId.Chansey: return true;//吉利蛋
+                case PokemonId.Blastoise: return true;//水箭龜
+                case PokemonId.Venusaur: return true;//妙蛙花
+                case PokemonId.Charizard: return true;//噴火龍
+                case PokemonId.Lapras: return true;
+                case PokemonId.Dragonite: return true;
+                case PokemonId.Dragonair: return true;
+                case PokemonId.Dratini: return true;
+                case PokemonId.Gyarados: return true;
+                case PokemonId.Ditto: return true;
+                case PokemonId.Articuno: return true;//冰鳥
+                case PokemonId.Zapdos: return true;//電鳥
+                case PokemonId.Moltres: return true;//火鳥
+                case PokemonId.Mew: return true;
+                case PokemonId.Mewtwo: return true;
                 default: return false;
             }
         }
 
-        private static string GetResponseString(Uri uri)
+        private static List<SniperInfo> GetSniperInfoFrom_pokesnipers(List<PokemonId> pokemonIds = null)
         {
-            HttpClient client = new HttpClient();
-            var task = Task.Run(() => client.GetStringAsync(uri));
-            task.Wait();
 
-            return task.Result;
+            var uri = $"http://pokesnipers.com/api/v1/pokemon.json";
+
+            ScanResult_pokesnipers scanResult_pokesnipers;
+            try
+            {
+                var handler = new ClearanceHandler();
+
+                // Create a HttpClient that uses the handler.
+                var client = new HttpClient(handler);
+
+                // Use the HttpClient as usual. Any JS challenge will be solved automatically for you.
+                var fullresp = client.GetStringAsync(uri).Result.Replace(" M", "Male").Replace(" F", "Female").Replace("Farfetch'd", "Farfetchd").Replace("Mr.Maleime", "MrMime");
+
+                scanResult_pokesnipers = JsonConvert.DeserializeObject<ScanResult_pokesnipers>(fullresp);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("(PokeSnipers.com) " + ex.Message);
+                return null;
+            }
+            if (scanResult_pokesnipers.pokemons != null)
+            {
+                foreach (var pokemon in scanResult_pokesnipers.pokemons)
+                {
+                    try
+                    {
+                        var SnipInfo = new SniperInfo();
+                        SnipInfo.Id = pokemon.name;
+                        string[] coordsArray = pokemon.coords.Split(',');
+                        SnipInfo.Latitude = Convert.ToDouble(coordsArray[0], CultureInfo.InvariantCulture);
+                        SnipInfo.Longitude = Convert.ToDouble(coordsArray[1], CultureInfo.InvariantCulture);
+                        SnipInfo.TimeStampAdded = DateTime.Now;
+                        SnipInfo.ExpirationTimestamp = Convert.ToDateTime(pokemon.until);
+                        SnipInfo.IV = pokemon.iv;
+                        SnipeLocations.Add(SnipInfo);
+                    }
+                    catch (Exception)
+                    {
+                        // ignored
+                    }
+                }
+                var locationsToSnipe = SnipeLocations?.Where(q =>
+                    !LocsVisited.Contains(new PokemonLocation(q.Latitude, q.Longitude))
+                    && !(q.ExpirationTimestamp != default(DateTime) &&
+                    q.ExpirationTimestamp > new DateTime(2016) &&
+                    // make absolutely sure that the server sent a correct datetime
+                    q.ExpirationTimestamp < DateTime.Now)).ToList() ??
+                    new List<SniperInfo>();
+
+                return locationsToSnipe.OrderBy(q => q.ExpirationTimestamp).ToList();
+            }
+            else
+                return null;
+        }
+
+        private static List<SniperInfo> GetSniperInfoFrom_pokewatchers()
+        {
+
+            var uri = $"http://pokewatchers.com/api.php?act=grab";
+
+            ScanResult_pokewatchers scanResult_pokewatchers;
+            try
+            {
+                var handler = new ClearanceHandler();
+
+                // Create a HttpClient that uses the handler.
+                var client = new HttpClient(handler);
+
+                // Use the HttpClient as usual. Any JS challenge will be solved automatically for you.
+                var fullresp = "{ \"pokemons\":" + client.GetStringAsync(uri).Result.Replace(" M", "Male").Replace(" F", "Female").Replace("Farfetch'd", "Farfetchd").Replace("Mr.Maleime", "MrMime") + "}";
+
+                scanResult_pokewatchers = JsonConvert.DeserializeObject<ScanResult_pokewatchers>(fullresp);
+            }
+            catch (Exception ex)
+            {
+                // most likely System.IO.IOException
+                Console.WriteLine("(PokeWatchers.com) " + ex.Message);
+                return null;
+            }
+            if (scanResult_pokewatchers.pokemons != null)
+            {
+                foreach (var pokemon in scanResult_pokewatchers.pokemons)
+                {
+                    try
+                    {
+                        var SnipInfo = new SniperInfo();
+                        SnipInfo.Id = pokemon.pokemon;
+                        string[] coordsArray = pokemon.cords.Split(',');
+                        SnipInfo.Latitude = Convert.ToDouble(coordsArray[0], CultureInfo.InvariantCulture);
+                        SnipInfo.Longitude = Convert.ToDouble(coordsArray[1], CultureInfo.InvariantCulture);
+                        SnipInfo.TimeStampAdded = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(pokemon.timeadded);
+                        SnipInfo.ExpirationTimestamp = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(pokemon.timeend);
+                        SnipeLocations.Add(SnipInfo);
+                    }
+                    catch
+                    {
+                    }
+                }
+                var locationsToSnipe = SnipeLocations?.Where(q =>
+                    !LocsVisited.Contains(new PokemonLocation(q.Latitude, q.Longitude))
+                    && !(q.ExpirationTimestamp != default(DateTime) &&
+                    q.ExpirationTimestamp > new DateTime(2016) &&
+                    // make absolutely sure that the server sent a correct datetime
+                    q.ExpirationTimestamp < DateTime.Now)).ToList() ??
+                    new List<SniperInfo>();
+
+                return locationsToSnipe.OrderBy(q => q.ExpirationTimestamp).ToList();
+            }
+            else
+                return null;
         }
     }
 }

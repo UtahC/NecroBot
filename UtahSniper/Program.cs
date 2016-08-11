@@ -36,7 +36,13 @@ namespace UtahSniper
         public static PokemonId targetPoke = PokemonId.Missingno;
         public static double lat = 0, lng = 0;
         public static SnipeEnum SnipeResult = SnipeEnum.Unknow;
-        public static int Main(string[] args)
+        public static void Main(string[] args)
+        {
+            Task.Run(() => Excute(args));
+            QuitEvent.WaitOne();
+        }
+
+        public async static Task<int> Excute(string[] args)
         {
             if (args.Length > 0)
             {
@@ -52,7 +58,7 @@ namespace UtahSniper
                 }
             }
 
-            Logger.SetLogger(new ConsoleLogger(LogLevel.LevelUp), subPath);
+            //Logger.SetLogger(new ConsoleLogger(LogLevel.LevelUp), subPath);
 
             var machine = new StateMachine();
             var stats = new Statistics();
@@ -62,9 +68,6 @@ namespace UtahSniper
             var parseSuccess = Enum.TryParse(args[0].Substring(14).Split('/')[0].Replace("'", "").Replace(" ", "").Replace(".", ""), out targetPoke);
             lat = double.Parse(args[0].Substring(14).Split('/')[1].Split(',')[0].Split('(').LastOrDefault().Split(')').LastOrDefault());
             lng = double.Parse(args[0].Substring(14).Split('/')[1].Split(',')[1].Split('(').LastOrDefault().Split(')').LastOrDefault());
-
-            Console.WriteLine("Argument: " + args[0]);
-            Console.WriteLine($"Target pokemon: {targetPoke} ({lat},{lng})");
 
             GlobalSettings settings;
 
@@ -95,18 +98,8 @@ namespace UtahSniper
                 session.EventDispatcher.EventReceived += evt => aggregator.Listen(evt, session);
                 machine.SetFailureState(new UtahLoginState());
                 Logger.SetLoggerContext(session);
-                machine.AsyncStart(new UtahLoginState(), session);
+                await machine.AsyncStart(new UtahLoginState(), session);
             }
-            Task.Run(() => 
-            {
-                while (true)
-                {
-                    if (SnipeResult != SnipeEnum.Unknow)
-                        QuitEvent.Set();
-                    QuitEvent.WaitOne(1000);
-                }
-            });
-            QuitEvent.WaitOne();
             return (int)SnipeResult;
         }
 
