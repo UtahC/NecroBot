@@ -53,7 +53,7 @@ namespace BotManeger
                 for (int j = 0; j < lines.Length; j++)
                 {
                     if (lines[j].Contains("\"AuthType\""))
-                        lines[j] = "  \"AuthType\": \"ptc\"";
+                        lines[j] = "  \"AuthType\": \"ptc\",";
                     if (lines[j].Contains("\"GoogleUsername\""))
                         lines[j] = "  \"GoogleUsername\": null,";
                     if (lines[j].Contains("\"GooglePassword\""))
