@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoGo.NecroBot.CLI", "PoGo.NecroBot.CLI\PoGo.NecroBot.CLI.csproj", "{1FEA147E-F704-497B-A538-00B053B5F672}"
 EndProject
@@ -15,6 +15,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "POGOProtos", "POGOProtos\POGOProtos\POGOProtos.csproj", "{A03A7BB2-4F0B-467B-84B2-9A76E6AAE6FB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PoGo.NecroBot.ConfigUI", "PoGo.NecroBot.ConfigUI\PoGo.NecroBot.ConfigUI.csproj", "{E75D21C4-8E71-4A69-9B80-3F9A7368D2B3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BotManeger", "BotManeger\BotManeger.csproj", "{B998CC4C-2D1A-4106-AF78-07E6D225BACE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -64,6 +66,14 @@ Global
 		{E75D21C4-8E71-4A69-9B80-3F9A7368D2B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E75D21C4-8E71-4A69-9B80-3F9A7368D2B3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E75D21C4-8E71-4A69-9B80-3F9A7368D2B3}.Release|x86.ActiveCfg = Release|x86
+		{B998CC4C-2D1A-4106-AF78-07E6D225BACE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B998CC4C-2D1A-4106-AF78-07E6D225BACE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B998CC4C-2D1A-4106-AF78-07E6D225BACE}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B998CC4C-2D1A-4106-AF78-07E6D225BACE}.Debug|x86.Build.0 = Debug|Any CPU
+		{B998CC4C-2D1A-4106-AF78-07E6D225BACE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B998CC4C-2D1A-4106-AF78-07E6D225BACE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B998CC4C-2D1A-4106-AF78-07E6D225BACE}.Release|x86.ActiveCfg = Release|Any CPU
+		{B998CC4C-2D1A-4106-AF78-07E6D225BACE}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
