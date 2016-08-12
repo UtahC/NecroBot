@@ -38,12 +38,17 @@ namespace UtahSniper
         public static SnipeEnum SnipeResult = SnipeEnum.Unknow;
         public static void Main(string[] args)
         {
-            Task.Run(() => Excute(args));
+            int result = 0;
+            Task.Run(async () => result = await Excute(args)).Wait();
+            while (SnipeResult == SnipeEnum.Unknow) Thread.Sleep(1000);
+            Console.WriteLine((SnipeEnum)result);
             QuitEvent.WaitOne();
         }
 
         public async static Task<int> Excute(string[] args)
         {
+            if (args.Length == 1)
+                args = args[0].Split(' ');
             if (args.Length > 0)
             {
                 if (args[0].ToLower() == "--registerurl")
@@ -57,14 +62,28 @@ namespace UtahSniper
                     return (int)SnipeEnum.RemoveUrlSuccess;
                 }
             }
+            
+            if (args.Length > 0)
+            {
+                subPath += args[1];
+            }
 
-            //Logger.SetLogger(new ConsoleLogger(LogLevel.LevelUp), subPath);
+            Console.WriteLine(args[0]);
+            Console.WriteLine(subPath);
+
+            Logger.SetLogger(new ConsoleLogger(LogLevel.LevelUp), subPath);
 
             var machine = new StateMachine();
             var stats = new Statistics();
             var profilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, subPath);
             var profileConfigPath = Path.Combine(profilePath, "Config");
             var configFile = Path.Combine(profileConfigPath, "config.json");
+            //Console.WriteLine(args[0]);
+            //Console.WriteLine(args[1]);
+            //Console.WriteLine("poke = " + args[0].Substring(14).Split('/')[0].Replace("'", "").Replace(" ", "").Replace(".", ""));
+            //Console.WriteLine("lat = " + args[0].Substring(14).Split('/')[1].Split(',')[0].Split('(').LastOrDefault().Split(')').LastOrDefault());
+            //Console.WriteLine("lon = " + args[0].Substring(14).Split('/')[1].Split(',')[1].Split('(').LastOrDefault().Split(')').LastOrDefault());
+            //while (true) ;
             var parseSuccess = Enum.TryParse(args[0].Substring(14).Split('/')[0].Replace("'", "").Replace(" ", "").Replace(".", ""), out targetPoke);
             lat = double.Parse(args[0].Substring(14).Split('/')[1].Split(',')[0].Split('(').LastOrDefault().Split(')').LastOrDefault());
             lng = double.Parse(args[0].Substring(14).Split('/')[1].Split(',')[1].Split('(').LastOrDefault().Split(')').LastOrDefault());
@@ -77,6 +96,9 @@ namespace UtahSniper
             }
             else
             {
+                Console.WriteLine("path = " + configFile);
+                Console.WriteLine("File.Exitsts = " + File.Exists(configFile));
+                Console.WriteLine("parseSuccess = " + parseSuccess);
                 Console.ReadKey();
                 return (int)SnipeEnum.ConfigFileNotFoundOrArgumentParsedError;
             }
@@ -100,6 +122,7 @@ namespace UtahSniper
                 Logger.SetLoggerContext(session);
                 await machine.AsyncStart(new UtahLoginState(), session);
             }
+            Logger.Write("done");
             return (int)SnipeResult;
         }
 

@@ -2,6 +2,7 @@
 using PoGo.NecroBot.Logic.Logging;
 using PoGo.NecroBot.Logic.State;
 using PoGo.NecroBot.Logic.Utils;
+using POGOProtos.Enums;
 using POGOProtos.Map.Fort;
 using POGOProtos.Map.Pokemon;
 using POGOProtos.Networking.Responses;
@@ -56,7 +57,7 @@ namespace PoGo.NecroBot.Logic.Tasks
                             _session.Client.CurrentLongitude,
                             i.Latitude, i.Longitude));
 
-            return pokemons.Where(p => p.PokemonId == Program.targetPoke);
+            return pokemons.Where(p => p.PokemonId == Program.targetPoke || p.PokemonId == PokemonId.Dragonite || p.PokemonId == PokemonId.Dragonair || p.PokemonId == PokemonId.Dratini);
         }
 
         private async static Task<bool> ForceUnban()

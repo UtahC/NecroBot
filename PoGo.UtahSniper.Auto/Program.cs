@@ -1,12 +1,15 @@
 ﻿using CloudFlareUtilities;
 using HtmlAgilityPack;
+using Microsoft.Win32;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using PoGo.NecroBot.Logic;
 using POGOProtos.Enums;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -145,6 +148,79 @@ namespace UtahSniper.Auto
 
         static void Main(string[] args)
         {
+            if (args.Length > 0)
+            {
+                if (args[0].ToLower() == "--registerurl")
+                {
+                    RegisterUrl();
+                    return;
+                }
+                else if (args[0].ToLower() == "--removeurl")
+                {
+                    RemoveUrl();
+                    return;
+                }
+
+                var lines = File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + "subpaths.txt");
+                foreach (var line in lines)
+                {
+                    Process.Start(AppDomain.CurrentDomain.BaseDirectory + "UtahSniper.exe", args[0] + " " + line);
+                    //Task.Run(() => UtahSniper.Program.Excute(new string[] { args[0], line }));
+                }
+            }
+            else
+            {
+                var lines = File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + "subpaths.txt");
+                var dic = new Dictionary<string, Process>();
+                while (true)
+                {
+                    List<PokemonId> pokemonIds = new List<PokemonId>() { PokemonId.Dragonair, PokemonId.Dratini, PokemonId.Dragonite };
+                    var location = new Location();
+                    var scanResult = SnipeScanForPokemon(location);
+                    var locationsToSnipe = new List<PokemonLocation>();
+                    if (scanResult.pokemons != null)
+                    {
+                        var filteredPokemon = scanResult.pokemons.Where(q => pokemonIds.Contains(q.pokemon_name));
+                        var notVisitedPokemon = filteredPokemon.Where(q => !LocsVisited.Contains(q));
+                        var notExpiredPokemon = notVisitedPokemon.Where(q => q.expires < (DateTime.Now.ToUniversalTime() - (new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc))).TotalMilliseconds);
+
+                        if (notExpiredPokemon.Any())
+                            locationsToSnipe.AddRange(notExpiredPokemon);
+                    }
+
+                    var _locationsToSnipe = locationsToSnipe.OrderBy(q => q.expires).ToList();
+
+                    if (_locationsToSnipe.Any())
+                    {
+                        foreach (var pokemonLocation in _locationsToSnipe)
+                        {
+                            if (!LocsVisited.Contains(new PokemonLocation(pokemonLocation.latitude, pokemonLocation.longitude)))
+                            {
+                                var snipeurl = @"pokesniper2://Dratini/" + $"{pokemonLocation.latitude},{pokemonLocation.longitude}";
+                                foreach (var line in lines)
+                                {
+                                    if (dic.ContainsKey(line))
+                                    {
+                                        dic[line].Kill();
+                                        dic.Remove(line);
+                                    }
+                                    var process = Process.Start(AppDomain.CurrentDomain.BaseDirectory + "UtahSniper.exe", args[0] + " " + line);
+                                    dic.Add(line, process);
+                                }
+                                Task.Delay(180000);
+                            }
+                        }
+                    }
+                    else if (!string.IsNullOrEmpty(scanResult.Status) && scanResult.Status.Contains("fail"))
+                        Console.WriteLine("skiplagged is down now.");
+                    else
+                        Console.WriteLine("there is no pokemon to snipe.");
+                }
+            }
+        }
+
+        private static void clawler()
+        {
             while (true)
             {
                 var pokemons = GetSniperInfoFrom_pokesnipers();
@@ -158,7 +234,7 @@ namespace UtahSniper.Auto
                         Console.WriteLine($"There is a {pokemon.Id} at ({pokemon.Latitude},{pokemon.Longitude}). Starting to catch it.");
                         string string4Sniper2 = $"pokesniper2://{pokemon.Id}/{pokemon.Latitude},{pokemon.Longitude}";
                         //SnipeEnum result = (SnipeEnum)UtahSniper.Program.Main(new string[] { string4Sniper2 });
-                        var task = Task.Run(() => UtahSniper.Program.Excute(new string[] { string4Sniper2 } ));
+                        var task = Task.Run(() => UtahSniper.Program.Excute(new string[] { string4Sniper2 }));
                         while (!task.IsCompleted) Thread.Sleep(1000);
                         Console.WriteLine((SnipeEnum)task.Result);
                     }
@@ -312,6 +388,72 @@ namespace UtahSniper.Auto
             }
             else
                 return null;
+        }
+
+        private static ScanResult SnipeScanForPokemon(Location location)
+        {
+            var formatter = new NumberFormatInfo { NumberDecimalSeparator = "." };
+
+            var offset = 0.06;
+            // 0.003 = half a mile; maximum 0.06 is 10 miles
+            if (offset < 0.001) offset = 0.003;
+            if (offset > 0.06) offset = 0.06;
+
+            var boundLowerLeftLat = location.Latitude - offset;
+            var boundLowerLeftLng = location.Longitude - offset;
+            var boundUpperRightLat = location.Latitude + offset;
+            var boundUpperRightLng = location.Longitude + offset;
+
+            var uri =
+                $"http://skiplagged.com/api/pokemon.php?bounds={boundLowerLeftLat.ToString(formatter)},{boundLowerLeftLng.ToString(formatter)},{boundUpperRightLat.ToString(formatter)},{boundUpperRightLng.ToString(formatter)}";
+
+            ScanResult scanResult;
+            try
+            {
+                var request = WebRequest.CreateHttp(uri);
+                request.Accept = "application/json";
+                request.UserAgent =
+                    "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.103 Safari/537.36\r\n";
+                request.Method = "GET";
+                request.Timeout = 15000;
+                request.ReadWriteTimeout = 32000;
+
+                var resp = request.GetResponse();
+                var reader = new StreamReader(resp.GetResponseStream());
+                var fullresp = reader.ReadToEnd().Replace(" M", "Male").Replace(" F", "Female").Replace("Farfetch'd", "Farfetchd").Replace("Mr.Maleime", "MrMime");
+
+                scanResult = JsonConvert.DeserializeObject<ScanResult>(fullresp);
+            }
+            catch (Exception ex)
+            {
+                // most likely System.IO.IOException
+                scanResult = new ScanResult
+                {
+                    Status = "fail",
+                    pokemons = new List<PokemonLocation>()
+                };
+            }
+            var a = scanResult.pokemons.ToList();
+            return scanResult;
+        }
+
+        private static void RemoveUrl()
+        {
+            Registry.ClassesRoot.DeleteSubKeyTree("pokesniper2");
+        }
+
+        private static void RegisterUrl()
+        {
+            if (Registry.ClassesRoot.GetSubKeyNames().Contains("pokesniper2"))
+                RemoveUrl();
+
+
+            var reg = Registry.ClassesRoot.CreateSubKey("pokesniper2");
+            reg.CreateSubKey("DefaultIcon");
+            reg.CreateSubKey("Shell").CreateSubKey("Open").CreateSubKey("Command");
+
+            Registry.SetValue("HKEY_CLASSES_ROOT\\pokesniper2\\DefaultIcon", null, "PoGo.UtahSniper.Auto.exe");
+            Registry.SetValue("HKEY_CLASSES_ROOT\\pokesniper2\\Shell\\Open\\Command", null, $"\"{AppDomain.CurrentDomain.BaseDirectory}\\PoGo.UtahSniper.Auto.exe\" \"%1\"");
         }
     }
 }

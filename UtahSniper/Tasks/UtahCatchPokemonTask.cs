@@ -58,7 +58,7 @@ namespace PoGo.NecroBot.Logic.Tasks
                     ? pokemon.Longitude
                     : currentFortData.Longitude);
 
-            CatchPokemonResponse caughtPokemonResponse;
+            CatchPokemonResponse caughtPokemonResponse = new CatchPokemonResponse();
             var attemptCounter = 1;
             do
             {
@@ -186,9 +186,6 @@ namespace PoGo.NecroBot.Logic.Tasks
                     Longitude = lng
                 };
 
-
-                if (caughtPokemonResponse.Status == CatchPokemonResponse.Types.CatchStatus.CatchFlee)
-                    return SnipeEnum.PokemonFlee;
                 if (caughtPokemonResponse.Status == CatchPokemonResponse.Types.CatchStatus.CatchSuccess)
                 {
                     var totalExp = 0;
@@ -219,8 +216,6 @@ namespace PoGo.NecroBot.Logic.Tasks
                     {
                         evt.FamilyCandies = caughtPokemonResponse.CaptureAward.Candy.Sum();
                     }
-
-                    return SnipeEnum.PokemonCaught;
                 }
 
                 evt.CatchType = encounter is EncounterResponse
@@ -260,7 +255,13 @@ namespace PoGo.NecroBot.Logic.Tasks
                 DelayingUtils.Delay(session.LogicSettings.DelayBetweenPokemonCatch, 0);
             } while (caughtPokemonResponse.Status == CatchPokemonResponse.Types.CatchStatus.CatchMissed ||
                      caughtPokemonResponse.Status == CatchPokemonResponse.Types.CatchStatus.CatchEscape);
-            return SnipeEnum.PokemonCatchNotSure;
+            switch (caughtPokemonResponse.Status)
+            {
+                case CatchPokemonResponse.Types.CatchStatus.CatchSuccess: return SnipeEnum.PokemonCaught;
+                case CatchPokemonResponse.Types.CatchStatus.CatchFlee: return SnipeEnum.PokemonFlee;
+                default: return SnipeEnum.PokemonCatchNotSure;
+            }
+            
         }
 
         private static async Task<ItemId> GetBestBall(ISession session, dynamic encounter, float probability)
