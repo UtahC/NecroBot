@@ -172,8 +172,10 @@ namespace PoGo.NecroBot.Logic.Tasks
 
                         break; //Continue with program as loot was succesfull.
                     }
+                    
                 } while (fortTry < retryNumber - zeroCheck);
                 //Stop trying if softban is cleaned earlier or if 40 times fort looting failed.
+                if (fortTry == 45) Thread.Sleep(1800000);
 
                 await eggWalker.ApplyDistance(distance, cancellationToken);
 
