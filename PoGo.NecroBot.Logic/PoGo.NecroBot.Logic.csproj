@@ -152,6 +152,7 @@
     <Compile Include="Event\UpdatePositionEvent.cs" />
     <Compile Include="Event\UseBerryEvent.cs" />
     <Compile Include="Event\EggIncubatorStatusEvent.cs" />
+    <Compile Include="Extension\PokemonDataExtensions.cs" />
     <Compile Include="Inventory.cs" />
     <Compile Include="Localization\Localizer.cs" />
     <Compile Include="Logging\Logger.cs" />

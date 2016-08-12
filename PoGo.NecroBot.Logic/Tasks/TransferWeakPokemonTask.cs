@@ -9,6 +9,7 @@ using PoGo.NecroBot.Logic.PoGoUtils;
 using PoGo.NecroBot.Logic.State;
 using PoGo.NecroBot.Logic.Utils;
 using POGOProtos.Data;
+using PoGo.NecroBot.Logic.Extentions;
 
 #endregion
 
@@ -25,14 +26,14 @@ namespace PoGo.NecroBot.Logic.Tasks
             var pokemonDatas = pokemons as IList<PokemonData> ?? pokemons.ToList();
             var pokemonsFiltered =
                 pokemonDatas.Where(pokemon => !session.LogicSettings.PokemonsNotToTransfer.Contains(pokemon.PokemonId))
-                    .ToList().OrderBy( poke => poke.Cp );
+                    .ToList().OrderBy( poke => poke.GetIV() );
 
             if (session.LogicSettings.KeepPokemonsThatCanEvolve)
                 pokemonsFiltered =
                     pokemonDatas.Where(pokemon => !session.LogicSettings.PokemonsToEvolve.Contains(pokemon.PokemonId))
-                        .ToList().OrderBy( poke => poke.Cp );
+                        .ToList().OrderBy( poke => poke.GetIV() );
 
-            var orderedPokemon = pokemonsFiltered.OrderBy( poke => poke.Cp );
+            var orderedPokemon = pokemonsFiltered.OrderBy( poke => poke.GetIV() );
 
             foreach (var pokemon in orderedPokemon )
             {

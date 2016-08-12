@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using PoGo.NecroBot.Logic.State;
 using PoGo.NecroBot.Logic.Utils;
+using PoGo.NecroBot.Logic.Extentions;
 
 #endregion
 
@@ -14,7 +15,7 @@ namespace PoGo.NecroBot.Logic.Tasks
         public static async Task Execute(ISession session, ulong pokemonId)
         {
             var all = await session.Inventory.GetPokemons();
-            var pokemons = all.OrderBy(x => x.Cp).ThenBy(n => n.StaminaMax);
+            var pokemons = all.OrderBy(x => x.GetIV()).ThenBy(n => n.StaminaMax);
             var pokemon = pokemons.FirstOrDefault(p => p.Id == pokemonId);
 
             if (pokemon == null) return;
