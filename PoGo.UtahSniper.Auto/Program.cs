@@ -170,52 +170,58 @@ namespace UtahSniper.Auto
             }
             else
             {
-                var lines = File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + "subpaths.txt");
-                var dic = new Dictionary<string, Process>();
-                while (true)
+                clawler();
+                return;
+            }
+        }
+
+        private static void Skiplagged(string[] args)
+        {
+            var lines = File.ReadAllLines(AppDomain.CurrentDomain.BaseDirectory + "subpaths.txt");
+            var dic = new Dictionary<string, Process>();
+            while (true)
+            {
+                List<PokemonId> pokemonIds = new List<PokemonId>() { PokemonId.Dragonair, PokemonId.Dratini, PokemonId.Dragonite };
+                var location = new Location();
+                var scanResult = SnipeScanForPokemon(location);
+                var locationsToSnipe = new List<PokemonLocation>();
+                if (scanResult.pokemons != null)
                 {
-                    List<PokemonId> pokemonIds = new List<PokemonId>() { PokemonId.Dragonair, PokemonId.Dratini, PokemonId.Dragonite };
-                    var location = new Location();
-                    var scanResult = SnipeScanForPokemon(location);
-                    var locationsToSnipe = new List<PokemonLocation>();
-                    if (scanResult.pokemons != null)
+                    var filteredPokemon = scanResult.pokemons.Where(q => pokemonIds.Contains(q.pokemon_name));
+                    var notVisitedPokemon = filteredPokemon.Where(q => !LocsVisited.Contains(q));
+                    var notExpiredPokemon = notVisitedPokemon.Where(q => q.expires < (DateTime.Now.ToUniversalTime() - (new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc))).TotalMilliseconds);
+
+                    if (notExpiredPokemon.Any())
+                        locationsToSnipe.AddRange(notExpiredPokemon);
+                }
+
+                var _locationsToSnipe = locationsToSnipe.OrderBy(q => q.expires).ToList();
+
+                if (_locationsToSnipe.Any())
+                {
+                    foreach (var pokemonLocation in _locationsToSnipe)
                     {
-                        var filteredPokemon = scanResult.pokemons.Where(q => pokemonIds.Contains(q.pokemon_name));
-                        var notVisitedPokemon = filteredPokemon.Where(q => !LocsVisited.Contains(q));
-                        var notExpiredPokemon = notVisitedPokemon.Where(q => q.expires < (DateTime.Now.ToUniversalTime() - (new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc))).TotalMilliseconds);
-
-                        if (notExpiredPokemon.Any())
-                            locationsToSnipe.AddRange(notExpiredPokemon);
-                    }
-
-                    var _locationsToSnipe = locationsToSnipe.OrderBy(q => q.expires).ToList();
-
-                    if (_locationsToSnipe.Any())
-                    {
-                        foreach (var pokemonLocation in _locationsToSnipe)
+                        if (!LocsVisited.Contains(new PokemonLocation(pokemonLocation.latitude, pokemonLocation.longitude)))
                         {
-                            if (!LocsVisited.Contains(new PokemonLocation(pokemonLocation.latitude, pokemonLocation.longitude)))
+                            var snipeurl = @"pokesniper2://Dratini/" + $"{pokemonLocation.latitude},{pokemonLocation.longitude}";
+                            foreach (var line in lines)
                             {
-                                var snipeurl = @"pokesniper2://Dratini/" + $"{pokemonLocation.latitude},{pokemonLocation.longitude}";
-                                foreach (var line in lines)
+                                if (dic.ContainsKey(line))
                                 {
-                                    if (dic.ContainsKey(line))
-                                    {
-                                        dic[line].Kill();
-                                        dic.Remove(line);
-                                    }
-                                    var process = Process.Start(AppDomain.CurrentDomain.BaseDirectory + "UtahSniper.exe", args[0] + " " + line);
-                                    dic.Add(line, process);
+                                    dic[line].Kill();
+                                    dic.Remove(line);
                                 }
-                                Task.Delay(180000);
+                                var process = Process.Start(AppDomain.CurrentDomain.BaseDirectory + "UtahSniper.exe", args[0] + " " + line);
+                                dic.Add(line, process);
                             }
+                            Task.Delay(180000);
                         }
                     }
-                    else if (!string.IsNullOrEmpty(scanResult.Status) && scanResult.Status.Contains("fail"))
-                        Console.WriteLine("skiplagged is down now.");
-                    else
-                        Console.WriteLine("there is no pokemon to snipe.");
                 }
+                else if (!string.IsNullOrEmpty(scanResult.Status) && scanResult.Status.Contains("fail"))
+                    Console.WriteLine("skiplagged is down now.");
+                else
+                    Console.WriteLine("there is no pokemon to snipe.");
             }
         }
 
@@ -235,6 +241,7 @@ namespace UtahSniper.Auto
                         string string4Sniper2 = $"pokesniper2://{pokemon.Id}/{pokemon.Latitude},{pokemon.Longitude}";
                         //SnipeEnum result = (SnipeEnum)UtahSniper.Program.Main(new string[] { string4Sniper2 });
                         var task = Task.Run(() => UtahSniper.Program.Excute(new string[] { string4Sniper2 }));
+                        
                         while (!task.IsCompleted) Thread.Sleep(1000);
                         Console.WriteLine((SnipeEnum)task.Result);
                     }
@@ -242,6 +249,7 @@ namespace UtahSniper.Auto
                     if (!LocsVisited.Contains(new PokemonLocation(pokemon.Latitude, pokemon.Longitude)))
                         LocsVisited.Add(new PokemonLocation(pokemon.Latitude, pokemon.Longitude));
                 }
+                Thread.Sleep(10000);
             }
         }
 
@@ -256,21 +264,21 @@ namespace UtahSniper.Auto
             switch (pokemon.Id)
             {
                 case PokemonId.Snorlax: return true;//卡比獸
-                case PokemonId.Chansey: return true;//吉利蛋
-                case PokemonId.Blastoise: return true;//水箭龜
-                case PokemonId.Venusaur: return true;//妙蛙花
-                case PokemonId.Charizard: return true;//噴火龍
-                case PokemonId.Lapras: return true;
-                case PokemonId.Dragonite: return true;
-                case PokemonId.Dragonair: return true;
-                case PokemonId.Dratini: return true;
-                case PokemonId.Gyarados: return true;
-                case PokemonId.Ditto: return true;
-                case PokemonId.Articuno: return true;//冰鳥
-                case PokemonId.Zapdos: return true;//電鳥
-                case PokemonId.Moltres: return true;//火鳥
-                case PokemonId.Mew: return true;
-                case PokemonId.Mewtwo: return true;
+                //case PokemonId.Chansey: return true;//吉利蛋
+                //case PokemonId.Blastoise: return true;//水箭龜
+                //case PokemonId.Venusaur: return true;//妙蛙花
+                //case PokemonId.Charizard: return true;//噴火龍
+                //case PokemonId.Lapras: return true;
+                //case PokemonId.Dragonite: return true;
+                //case PokemonId.Dragonair: return true;
+                //case PokemonId.Dratini: return true;
+                //case PokemonId.Gyarados: return true;
+                //case PokemonId.Ditto: return true;
+                //case PokemonId.Articuno: return true;//冰鳥
+                //case PokemonId.Zapdos: return true;//電鳥
+                //case PokemonId.Moltres: return true;//火鳥
+                //case PokemonId.Mew: return true;
+                //case PokemonId.Mewtwo: return true;
                 default: return false;
             }
         }

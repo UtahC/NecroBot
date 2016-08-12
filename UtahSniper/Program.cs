@@ -38,6 +38,20 @@ namespace UtahSniper
         public static SnipeEnum SnipeResult = SnipeEnum.Unknow;
         public static void Main(string[] args)
         {
+            if (args.Length > 0)
+            {
+                if (args[0].ToLower() == "--registerurl")
+                {
+                    RegisterUrl();
+                    return ;
+                }
+                else if (args[0].ToLower() == "--removeurl")
+                {
+                    RemoveUrl();
+                    return ;
+                }
+            }
+            Logger.SetLogger(new ConsoleLogger(LogLevel.LevelUp), "");
             int result = 0;
             Task.Run(async () => result = await Excute(args)).Wait();
             while (SnipeResult == SnipeEnum.Unknow) Thread.Sleep(1000);
@@ -49,21 +63,9 @@ namespace UtahSniper
         {
             if (args.Length == 1)
                 args = args[0].Split(' ');
-            if (args.Length > 0)
-            {
-                if (args[0].ToLower() == "--registerurl")
-                {
-                    RegisterUrl();
-                    return (int)SnipeEnum.RegisterUrlSuccess;
-                }
-                else if (args[0].ToLower() == "--removeurl")
-                {
-                    RemoveUrl();
-                    return (int)SnipeEnum.RemoveUrlSuccess;
-                }
-            }
             
-            if (args.Length > 0)
+            
+            if (args.Length > 1)
             {
                 subPath += args[1];
             }
@@ -71,7 +73,7 @@ namespace UtahSniper
             Console.WriteLine(args[0]);
             Console.WriteLine(subPath);
 
-            Logger.SetLogger(new ConsoleLogger(LogLevel.LevelUp), subPath);
+            //Logger.SetLogger(new ConsoleLogger(LogLevel.LevelUp), subPath);
 
             var machine = new StateMachine();
             var stats = new Statistics();
