@@ -56,16 +56,19 @@ namespace PoGo.NecroBot.CLI
             GlobalSettings settings;
             Boolean boolNeedsSetup = false;
 
-            if (File.Exists(configFile))
+            if( File.Exists( configFile ) )
             {
-                settings = GlobalSettings.Load(subPath);
+                // Load the settings from the config file
+                // If the current program is not the latest version, ensure we skip saving the file after loading
+                // This is to prevent saving the file with new options at their default values so we can check for differences
+                settings = GlobalSettings.Load( subPath, !VersionCheckState.IsLatest() );
             }
             else
             {
                 settings = new GlobalSettings();
                 settings.ProfilePath = profilePath;
                 settings.ProfileConfigPath = profileConfigPath;
-                settings.GeneralConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "config");
+                settings.GeneralConfigPath = Path.Combine( Directory.GetCurrentDirectory(), "config" );
                 settings.TranslationLanguageCode = strCulture;
 
                 boolNeedsSetup = true;
@@ -174,7 +177,13 @@ namespace PoGo.NecroBot.CLI
             ProgressBar.fill(100);
 
             machine.AsyncStart(new VersionCheckState(), session);
-            
+
+            try
+            {
+                Console.Clear();
+            }
+            catch( IOException ) { }
+
             if (settings.UseTelegramAPI)
             {
                 session.Telegram = new Logic.Service.TelegramService(settings.TelegramAPIKey, session);
@@ -183,13 +192,7 @@ namespace PoGo.NecroBot.CLI
             if (session.LogicSettings.UseSnipeLocationServer)
                 SnipePokemonTask.AsyncStart(session);
 
-            try
-            {
-                Console.Clear();
-            }
-            catch (IOException) { }
-
-            settings.checkProxy();
+            settings.checkProxy(session.Translation);
 
             QuitEvent.WaitOne();
         }
@@ -213,6 +216,10 @@ namespace PoGo.NecroBot.CLI
                 try
                 {
                     string strResponse = WebClientExtensions.DownloadString(wC, strKillSwitchUri);
+                        
+                    if( strResponse == null )
+                        return false;
+
                     string[] strSplit = strResponse.Split(';');
 
                     if (strSplit.Length > 1)

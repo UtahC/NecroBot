@@ -376,7 +376,7 @@
     },
     {
       "Key": "HelpTemplate",
-      "Value": "Kommandos: \n \n /top <cp/iv> <amount> - Zeigt die besten Pokemons an. \n /all <cp/iv> - Zeigt dir alle Pokemons an. \n /profile - Zeigt dein Profil. \n /loc - Zeigt deine Position an. \n /items - Zeigt dir deine Items \n /status - Zeigt den Status vom Bot. \n /pokedex - Zeigt dein Pokedex. "
+      "Value": "Kommandos: \n \n /top <cp/iv> <amount> - Zeigt die besten Pokemons an. \n /all <cp/iv> - Zeigt dir alle Pokemons an. \n /profile - Zeigt dein Profil. \n /loc - Zeigt deine Position an. \n /items - Zeigt dir deine Items \n /status - Zeigt den Status vom Bot. \n /pokedex - Zeigt dein Pokedex. \n /restart - startet den Bot neu"
     },
     {
       "Key": "StatsXpTemplateString",
@@ -505,6 +505,34 @@
     {
       "Key": "PokedexPokemonNeededTelegram",
       "Value":  "#{0} Name: {1} \n"  
+    },
+    {
+      "Key": "Proxied",
+      "Value": "Your IP is: {0} | Proxy IP is: {1}"
+    },
+    {
+      "Key": "FixProxySettings",
+      "Value": "Press any key to exit so you can fix your proxy settings..."
+    },
+    {
+      "Key": "Unproxied",
+      "Value": " Your IP is: {0}"
+    },
+    {
+      "Key": "HighestsPokemoHeader",
+      "Value": "====== {0} ======"
+    },
+    {
+      "Key": "HighestsPokemoCell",
+      "Value": "# CP {0}/{1} | ({2}% {3})\t| Lvl {5}\t {6}: {7}\t {8}: {9} {10}: {11} {12}: {13}"
+    },
+    {
+      "Key": "HighestsPokemoHeader",
+      "Value": "====== {0} ======"
+    },
+    {
+      "Key": "HighestsPokemoCell",
+      "Value": "# CP {0}/{1} | ({2}% {3})\t| Lvl {5}\t {6}: {7}\t {8}: {9} {10}: {11} {12}: {13}"
     }
   ],
   "PokemonStrings": [
