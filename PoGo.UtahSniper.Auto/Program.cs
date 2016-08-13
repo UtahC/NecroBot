@@ -263,12 +263,12 @@ namespace UtahSniper.Auto
         {
             switch (pokemon.Id)
             {
-                case PokemonId.Snorlax: return true;//卡比獸
+                //case PokemonId.Snorlax: return true;//卡比獸
                 //case PokemonId.Chansey: return true;//吉利蛋
                 //case PokemonId.Blastoise: return true;//水箭龜
                 //case PokemonId.Venusaur: return true;//妙蛙花
                 //case PokemonId.Charizard: return true;//噴火龍
-                //case PokemonId.Lapras: return true;
+                case PokemonId.Lapras: return true;
                 //case PokemonId.Dragonite: return true;
                 //case PokemonId.Dragonair: return true;
                 //case PokemonId.Dratini: return true;

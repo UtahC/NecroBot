@@ -95,6 +95,8 @@ namespace UtahSniper
             if (File.Exists(configFile) && parseSuccess)
             {
                 settings = GlobalSettings.Load(subPath);
+                Console.WriteLine(settings.Auth.GoogleUsername);
+                Console.WriteLine(settings.Auth.PtcUsername);
             }
             else
             {
