@@ -239,11 +239,20 @@ namespace UtahSniper.Auto
                             break;
                         Console.WriteLine($"There is a {pokemon.Id} at ({pokemon.Latitude},{pokemon.Longitude}). Starting to catch it.");
                         string string4Sniper2 = $"pokesniper2://{pokemon.Id}/{pokemon.Latitude},{pokemon.Longitude}";
-                        //SnipeEnum result = (SnipeEnum)UtahSniper.Program.Main(new string[] { string4Sniper2 });
-                        var task = Task.Run(() => UtahSniper.Program.Excute(new string[] { string4Sniper2 }));
-                        
-                        while (!task.IsCompleted) Thread.Sleep(1000);
-                        Console.WriteLine((SnipeEnum)task.Result);
+
+                        Task<int> task;
+                        int tryCount = 0;
+                        do
+                        {
+                            tryCount++;
+                            if (tryCount > 1) Console.WriteLine("pokemon or pokestop not found, try again.");
+
+                            task = Task.Run(() => UtahSniper.Program.Excute(new string[] { string4Sniper2 }));
+
+                            while (!task.IsCompleted) Thread.Sleep(1000);
+
+                            Console.WriteLine((SnipeEnum)task.Result);
+                        } while ((task.Result == (int)SnipeEnum.PokemonNotFound || task.Result == (int)SnipeEnum.PokeStopNotFound) && tryCount < 2);
                     }
 
                     if (!LocsVisited.Contains(new PokemonLocation(pokemon.Latitude, pokemon.Longitude)))

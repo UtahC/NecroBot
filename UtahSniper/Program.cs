@@ -70,9 +70,6 @@ namespace UtahSniper
                 subPath += args[1];
             }
 
-            Console.WriteLine(args[0]);
-            Console.WriteLine(subPath);
-
             //Logger.SetLogger(new ConsoleLogger(LogLevel.LevelUp), subPath);
 
             var machine = new StateMachine();
@@ -80,23 +77,16 @@ namespace UtahSniper
             var profilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, subPath);
             var profileConfigPath = Path.Combine(profilePath, "Config");
             var configFile = Path.Combine(profileConfigPath, "config.json");
-            //Console.WriteLine(args[0]);
-            //Console.WriteLine(args[1]);
-            //Console.WriteLine("poke = " + args[0].Substring(14).Split('/')[0].Replace("'", "").Replace(" ", "").Replace(".", ""));
-            //Console.WriteLine("lat = " + args[0].Substring(14).Split('/')[1].Split(',')[0].Split('(').LastOrDefault().Split(')').LastOrDefault());
-            //Console.WriteLine("lon = " + args[0].Substring(14).Split('/')[1].Split(',')[1].Split('(').LastOrDefault().Split(')').LastOrDefault());
-            //while (true) ;
             var parseSuccess = Enum.TryParse(args[0].Substring(14).Split('/')[0].Replace("'", "").Replace(" ", "").Replace(".", ""), out targetPoke);
             lat = double.Parse(args[0].Substring(14).Split('/')[1].Split(',')[0].Split('(').LastOrDefault().Split(')').LastOrDefault());
             lng = double.Parse(args[0].Substring(14).Split('/')[1].Split(',')[1].Split('(').LastOrDefault().Split(')').LastOrDefault());
+            Console.WriteLine($"subpath = {subPath}");
 
             GlobalSettings settings;
 
             if (File.Exists(configFile) && parseSuccess)
             {
                 settings = GlobalSettings.Load(subPath);
-                Console.WriteLine(settings.Auth.GoogleUsername);
-                Console.WriteLine(settings.Auth.PtcUsername);
             }
             else
             {
