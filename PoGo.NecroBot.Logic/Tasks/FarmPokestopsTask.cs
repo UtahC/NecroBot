@@ -168,6 +168,13 @@ namespace PoGo.NecroBot.Logic.Tasks
                 } while (fortTry < retryNumber - zeroCheck);
                 //Stop trying if softban is cleaned earlier or if 40 times fort looting failed.
 
+                if (fortTry >= retryNumber - zeroCheck)
+                {
+                    int sleepTime = 1000 * 60 * 30;
+                    Logger.Write($"Cannot force unban. Now starting to sleep for {sleepTime / 60000} minutes.");
+                    await Task.Delay(sleepTime);
+                }
+
                 await eggWalker.ApplyDistance(distance, cancellationToken);
 
                 if (++stopsHit >= storeRI) //TODO: OR item/pokemon bag is full //check stopsHit against storeRI random without dividing.

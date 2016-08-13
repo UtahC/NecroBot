@@ -46,8 +46,8 @@ namespace PoGo.NecroBot.CLI
 
             Logger.SetLogger(new ConsoleLogger(LogLevel.LevelUp), subPath);
 
-            if (CheckKillSwitch())
-                return;
+            //if (CheckKillSwitch())
+            //    return;
 
             var profilePath = Path.Combine(Directory.GetCurrentDirectory(), subPath);
             var profileConfigPath = Path.Combine(profilePath, "config");
