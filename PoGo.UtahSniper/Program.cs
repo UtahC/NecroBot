@@ -74,7 +74,7 @@ namespace UtahSniper
 
             var machine = new StateMachine();
             var stats = new Statistics();
-            var profilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, subPath);
+            var profilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Profiles", subPath);
             var profileConfigPath = Path.Combine(profilePath, "Config");
             var configFile = Path.Combine(profileConfigPath, "config.json");
             var parseSuccess = Enum.TryParse(args[0].Substring(14).Split('/')[0].Replace("'", "").Replace(" ", "").Replace(".", ""), out targetPoke);
@@ -116,7 +116,6 @@ namespace UtahSniper
                 Logger.SetLoggerContext(session);
                 await machine.AsyncStart(new UtahLoginState(), session);
             }
-            Logger.Write("done");
             return (int)SnipeResult;
         }
 

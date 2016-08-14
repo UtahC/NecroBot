@@ -31,9 +31,9 @@ namespace PoGo.NecroBot.Logic.State
             CancellationToken cancellationToken = default(CancellationToken))
         {
             var state = initialState;
-            var profilePath = Path.Combine(Directory.GetCurrentDirectory(), "");
+            var profilePath = session.LogicSettings.ProfilePath;
             var profileConfigPath = Path.Combine(profilePath, "config");
-
+            
             FileSystemWatcher configWatcher = new FileSystemWatcher();
             configWatcher.Path = profileConfigPath;
             configWatcher.Filter = "config.json";

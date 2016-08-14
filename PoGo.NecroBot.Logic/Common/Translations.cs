@@ -198,6 +198,8 @@ namespace PoGo.NecroBot.Logic.Common
 
     public class Translation : ITranslation
     {
+        private static object _lockForReadingTranslationFile = new object();
+
         [JsonProperty("TranslationStrings",
             ItemTypeNameHandling = TypeNameHandling.Arrays,
             ItemConverterType = typeof(KeyValuePairConverter),
@@ -844,12 +846,16 @@ namespace PoGo.NecroBot.Logic.Common
         public static Translation Load(ILogicSettings logicSettings, Translation translations )
         {
             var translationsLanguageCode = logicSettings.TranslationLanguageCode;
-            var translationPath = Path.Combine(logicSettings.GeneralConfigPath, "translations");
+            var translationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Translations");
             var fullPath = Path.Combine(translationPath, "translation." + translationsLanguageCode + ".json");
 
             if (File.Exists(fullPath))
             {
-                var input = File.ReadAllText(fullPath);
+                var input = "";
+                lock (_lockForReadingTranslationFile)
+                {
+                    input = File.ReadAllText(fullPath);
+                }
 
                 var jsonSettings = new JsonSerializerSettings();
                 jsonSettings.Converters.Add(new StringEnumConverter { CamelCaseText = true });

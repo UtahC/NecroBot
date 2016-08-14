@@ -34,7 +34,9 @@ namespace PoGo.NecroBot.Logic.Tasks
             // If the encounter is null nothing will work below, so exit now
             if (encounter == null) return SnipeEnum.PokemonCatchError;
 
-            float probability = encounter.CaptureProbability?.CaptureProbability_[0];
+            float probability;
+            try { probability = encounter.CaptureProbability?.CaptureProbability_[0]; }
+            catch { probability = 1; };
 
             // Check for pokeballs before proceeding
             var pokeball = await GetBestBall(session, encounter, probability);

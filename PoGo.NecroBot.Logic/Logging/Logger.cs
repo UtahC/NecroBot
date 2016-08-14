@@ -27,6 +27,9 @@ namespace PoGo.NecroBot.Logic.Logging
                 if (_lastLogTime.AddSeconds(60).Ticks > DateTime.Now.Ticks && !force)
                     return;
 
+                if (string.IsNullOrEmpty(_path))
+                    return;
+
                 using (
                     var log =
                         File.AppendText(Path.Combine(_path,
@@ -50,13 +53,17 @@ namespace PoGo.NecroBot.Logic.Logging
         ///     unset.
         /// </summary>
         /// <param name="logger"></param>
-        public static void SetLogger(ILogger logger, string subPath = "", bool isGui = false)
+        public static void SetLogger(ILogger logger, string profilePath, bool isGui = false)
         {
             _logger = logger;
             _isGui = isGui;
+
+            if (string.IsNullOrEmpty(profilePath))
+                return;
+
             if (!_isGui)
             {
-                _path = Path.Combine(Directory.GetCurrentDirectory(), subPath, "Logs");
+                _path = Path.Combine(profilePath, "Logs");
                 Directory.CreateDirectory(_path);
                 Log($"Initializing NecroBot logger at time {DateTime.Now}...");
             }

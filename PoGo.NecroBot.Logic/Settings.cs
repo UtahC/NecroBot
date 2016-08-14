@@ -808,7 +808,7 @@ namespace PoGo.NecroBot.Logic
         {
             GlobalSettings settings = null;
             bool isGui = (AppDomain.CurrentDomain.GetAssemblies().SingleOrDefault(a => a.FullName.Contains("PoGo.NecroBot.GUI")) != null);
-            var profilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
+            var profilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Profiles", path);
             var profileConfigPath = Path.Combine(profilePath, "config");
             var configFile = Path.Combine(profileConfigPath, "config.json");
             var shouldExit = false;
@@ -874,7 +874,7 @@ namespace PoGo.NecroBot.Logic
             
             settings.ProfilePath = profilePath;
             settings.ProfileConfigPath = profileConfigPath;
-            settings.GeneralConfigPath = Path.Combine(Directory.GetCurrentDirectory(), "config");
+            settings.GeneralConfigPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Profiles", "Default", "Config");
             settings.isGui = isGui;
 
             if (!boolSkipSave || !settings.AutoUpdate)

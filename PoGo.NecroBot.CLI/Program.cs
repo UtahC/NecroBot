@@ -22,7 +22,7 @@ namespace PoGo.NecroBot.CLI
     internal class Program
     {
         private static readonly ManualResetEvent QuitEvent = new ManualResetEvent(false);
-        private static string subPath = "";
+        private static string subPath = "Default";
         private static Uri strKillSwitchUri = new Uri("https://raw.githubusercontent.com/NECROBOTIO/NecroBot/master/KillSwitch.txt");
 
         private static void Main(string[] args)
@@ -44,14 +44,14 @@ namespace PoGo.NecroBot.CLI
             if (args.Length > 0)
                 subPath = args[0];
 
-            Logger.SetLogger(new ConsoleLogger(LogLevel.LevelUp), subPath);
+            var profilePath = Path.Combine(Directory.GetCurrentDirectory(), "Profiles", subPath);
+            var profileConfigPath = Path.Combine(profilePath, "Config");
+            var configFile = Path.Combine(profileConfigPath, "config.json");
+
+            Logger.SetLogger(new ConsoleLogger(LogLevel.LevelUp),  profilePath);
 
             //if (CheckKillSwitch())
             //    return;
-
-            var profilePath = Path.Combine(Directory.GetCurrentDirectory(), subPath);
-            var profileConfigPath = Path.Combine(profilePath, "config");
-            var configFile = Path.Combine(profileConfigPath, "config.json");
 
             GlobalSettings settings;
             Boolean boolNeedsSetup = false;
@@ -201,7 +201,7 @@ namespace PoGo.NecroBot.CLI
 
         private static void SaveLocationToDisk(double lat, double lng)
         {
-            var coordsPath = Path.Combine(Directory.GetCurrentDirectory(), subPath, "Config", "LastPos.ini");
+            var coordsPath = Path.Combine(Directory.GetCurrentDirectory(), "Profiles", subPath, "Config", "LastPos.ini");
 
             File.WriteAllText(coordsPath, $"{lat}:{lng}");
         }
