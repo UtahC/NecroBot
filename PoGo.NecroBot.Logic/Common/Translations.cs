@@ -843,7 +843,7 @@ namespace PoGo.NecroBot.Logic.Common
             return Load( logicSettings, new Translation() );
         }
 
-        public static Translation Load(ILogicSettings logicSettings, Translation translations )
+        public static Translation Load(ILogicSettings logicSettings, Translation translations)
         {
             var translationsLanguageCode = logicSettings.TranslationLanguageCode;
             var translationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Translations");
@@ -896,11 +896,6 @@ namespace PoGo.NecroBot.Logic.Common
                         return null;
                     }
                 }
-            }
-            else
-            {
-                translations = new Translation();
-                translations.Save(Path.Combine(translationPath, "translation.en.json"));
             }
 
             return translations;

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using PoGo.NecroBot.Logic.Tasks;
 
-namespace UtahSniper.State
+namespace PoGo.UtahSniper.State
 {
     class SnipeTargetState : IState
     {

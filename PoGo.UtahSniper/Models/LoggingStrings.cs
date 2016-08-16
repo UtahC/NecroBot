@@ -1,7 +1,7 @@
 using PoGo.NecroBot.Logic.Common;
 using PoGo.NecroBot.Logic.State;
 
-namespace UtahSniper
+namespace PoGo.UtahSniper
 {
     internal class LoggingStrings
     {

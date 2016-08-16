@@ -13,7 +13,7 @@ using POGOProtos.Networking.Responses;
 
 #endregion
 
-namespace UtahSniper
+namespace PoGo.UtahSniper
 {
     [SuppressMessage("ReSharper", "UnusedParameter.Local")]
     internal class ConsoleEventListener

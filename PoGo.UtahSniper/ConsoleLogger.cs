@@ -7,7 +7,7 @@ using PoGo.NecroBot.Logic.State;
 
 #endregion
 
-namespace UtahSniper
+namespace PoGo.UtahSniper
 {
     /// <summary>
     /// The ConsoleLogger is a simple logger which writes all logs to the Console.

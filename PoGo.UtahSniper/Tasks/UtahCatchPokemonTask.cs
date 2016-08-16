@@ -14,7 +14,7 @@ using POGOProtos.Inventory.Item;
 using POGOProtos.Map.Fort;
 using POGOProtos.Map.Pokemon;
 using POGOProtos.Networking.Responses;
-using UtahSniper;
+using PoGo.UtahSniper;
 
 #endregion
 

@@ -79,6 +79,7 @@
     <Compile Include="Models\LoggingStrings.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Sniper.cs" />
     <Compile Include="Tasks\UtahCatchPokemonTask.cs" />
     <Compile Include="State\UtahLoginState.cs" />
     <Compile Include="State\SnipeTargetState.cs" />

@@ -2,6 +2,7 @@
 using PoGo.NecroBot.Logic.Logging;
 using PoGo.NecroBot.Logic.State;
 using PoGo.NecroBot.Logic.Utils;
+using PoGo.UtahSniper;
 using POGOProtos.Enums;
 using POGOProtos.Map.Fort;
 using POGOProtos.Map.Pokemon;
@@ -13,7 +14,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using UtahSniper;
 
 namespace PoGo.NecroBot.Logic.Tasks
 {

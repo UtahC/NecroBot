@@ -1,70 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using PoGo.NecroBot.Logic;
+﻿using PoGo.NecroBot.Logic;
 using PoGo.NecroBot.Logic.Common;
 using PoGo.NecroBot.Logic.Logging;
-using System.Reflection;
 using PoGo.NecroBot.Logic.State;
-using System.IO;
-using Microsoft.Win32;
-using POGOProtos.Enums;
 using PoGo.NecroBot.Logic.Utils;
+using POGOProtos.Enums;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace PoGo.UtahSniper
 {
-    public enum SnipeEnum
+    public class Sniper
     {
-        Unknow,
-        PokemonCaught,
-        PokemonFlee,
-        PokemonCatchError,
-        PokemonCatchNotSure,
-        PokemonNotFound,
-        PokeStopNotFound,
-        RegisterUrlSuccess,
-        ConfigFileNotFoundOrArgumentParsedError,
-        RemoveUrlSuccess
-    }
-    public class Program
-    {
-        public static readonly ManualResetEvent QuitEvent = new ManualResetEvent(false);
-        public static PokemonId targetPoke = PokemonId.Missingno;
-        public static double lat = 0, lng = 0;
-        public static SnipeEnum SnipeResult = SnipeEnum.Unknow;
-        public static void Main(string[] args)
+        public PokemonId targetPoke = PokemonId.Missingno;
+        public double lat = 0, lng = 0;
+        public SnipeEnum SnipeResult = SnipeEnum.Unknow;
+        public string subPath = "";
+        public async Task<int> Excute(string[] args, CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (args.Length > 0)
-            {
-                if (args[0].ToLower() == "--registerurl")
-                {
-                    RegisterUrl();
-                    return ;
-                }
-                else if (args[0].ToLower() == "--removeurl")
-                {
-                    RemoveUrl();
-                    return ;
-                }
-            }
-            Logger.SetLogger(new ConsoleLogger(LogLevel.LevelUp), "");
-            int result = 0;
-            Task.Run(async () => result = await Excute(args)).Wait();
-            while (SnipeResult == SnipeEnum.Unknow) Thread.Sleep(1000);
-            Console.WriteLine((SnipeEnum)result);
-            QuitEvent.WaitOne();
-        }
-
-        public async static Task<int> Excute(string[] args, CancellationToken cancellationToken = default(CancellationToken))
-        {
-            string subPath = "";
-
             if (args.Length == 1)
                 args = args[0].Split(' ');
-            
+
             if (args.Length > 1)
             {
                 subPath += args[1];
@@ -117,25 +77,6 @@ namespace PoGo.UtahSniper
                 await machine.AsyncStart(new UtahLoginState(), session, cancellationToken);
             }
             return (int)SnipeResult;
-        }
-
-        private static void RemoveUrl()
-        {
-            Registry.ClassesRoot.DeleteSubKeyTree("pokesniper2");
-        }
-
-        private static void RegisterUrl()
-        {
-            if (Registry.ClassesRoot.GetSubKeyNames().Contains("pokesniper2"))
-                RemoveUrl();
-
-
-            var reg = Registry.ClassesRoot.CreateSubKey("pokesniper2");
-            reg.CreateSubKey("DefaultIcon");
-            reg.CreateSubKey("Shell").CreateSubKey("Open").CreateSubKey("Command");
-
-            Registry.SetValue("HKEY_CLASSES_ROOT\\pokesniper2\\DefaultIcon", null, "UtahSniper.exe");
-            Registry.SetValue("HKEY_CLASSES_ROOT\\pokesniper2\\Shell\\Open\\Command", null, $"\"{AppDomain.CurrentDomain.BaseDirectory}\\UtahSniper.exe\" \"%1\"");
         }
     }
 }
