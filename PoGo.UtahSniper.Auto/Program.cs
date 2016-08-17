@@ -67,14 +67,16 @@ namespace PoGo.UtahSniper.Auto
 
                 foreach (SniperInfo pokemon in pokemons)
                 {
-                    if (pokemon == null)
+                    if (pokemon == null ||
+                        profile.isSniping ||
+                        profile.LocsVisited.Contains(new PokemonLocation(pokemon.Latitude, pokemon.Longitude)) ||
+                        !profile.wantedPoke.Contains(pokemon.Id) ||
+                        profile.lastSnipingStartTime.AddMinutes(5) > DateTime.Now)
+                    {
+                        Thread.Sleep(500);
                         continue;
-                    if (profile.isSniping)
-                        continue;
-                    if (profile.LocsVisited.Contains(new PokemonLocation(pokemon.Latitude, pokemon.Longitude)))
-                        continue;
-                    if (!profile.wantedPoke.Contains(pokemon.Id))
-                        continue;
+                    }
+                        
 
                     string string4Sniper2 = $"pokesniper2://{pokemon.Id}/{pokemon.Latitude},{pokemon.Longitude}";
 

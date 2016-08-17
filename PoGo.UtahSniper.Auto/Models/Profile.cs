@@ -20,7 +20,7 @@ namespace PoGo.UtahSniper.Auto.Models
                 if (parseSuccess && pokeId != PokemonId.Missingno)
                     wantedPoke.Add(pokeId);
             }
-            lastSnipingStartTime = DateTime.Now.AddMinutes(-3);
+            lastSnipingStartTime = DateTime.MinValue;
         }
 
         public string subpath = "";
